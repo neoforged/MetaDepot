@@ -2,6 +2,10 @@ name: Update Meta Depot
 
 on:
   workflow_dispatch:
+    inputs:
+      allow-full-resync:
+        description: Allow Empty Depot
+        type: boolean
 
 permissions:
   id-token: write
@@ -22,9 +26,7 @@ jobs:
             core.setOutput('meta-api-token', await core.getIDToken('neoforge-meta-api'))
             core.setOutput('depot-manager-token', await core.getIDToken('https://depot-manager.neoforged.net'))
       - name: Update Meta Depot
-        run: |
-          curl --fail -H "Authorization: Bearer ${META_API_TOKEN}" https://meta-api.prod.k8s.neoforged.net/v1/neoforge-versions/ -v -o response
-          cat response | jq
+        run: node index.ts ${{ inputs.allow-full-resync && '--full-resync' || '' }}
         env:
           META_API_TOKEN: "${{ steps.oidc.outputs.token }}"
           DEPOT_MANAGER_TOKEN: "${{ steps.oidc.outputs.token }}"
