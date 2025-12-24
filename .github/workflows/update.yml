@@ -1,0 +1,32 @@
+name: Update Meta Depot
+
+on:
+  workflow_dispatch:
+
+permissions:
+  id-token: write
+
+jobs:
+  build:
+    runs-on: ubuntu-latest
+
+    steps:
+      - uses: actions/setup-node@v6
+        with:
+          node-version: 24
+      - name: Get OIDC tokens
+        id: oidc
+        uses: actions/github-script@v7
+        with:
+          script: |
+            core.setOutput('meta-api-token', await core.getIDToken('neoforge-meta-api'))
+            core.setOutput('depot-manager-token', await core.getIDToken('https://depot-manager.neoforged.net'))
+      - name: Update Meta Depot
+        run: |
+          curl --fail -H "Authorization: Bearer ${META_API_TOKEN}" https://meta-api.prod.k8s.neoforged.net/v1/neoforge-versions/ -v -o response
+          cat response | jq
+        env:
+          META_API_TOKEN: "${{ steps.oidc.outputs.token }}"
+          DEPOT_MANAGER_TOKEN: "${{ steps.oidc.outputs.token }}"
+          DEPOT_MANAGER_BASE_URL: https://depot-manager.neoforged.net/meta/
+          DEPOT_BASE_URL: https://depot.neoforged.net/meta/

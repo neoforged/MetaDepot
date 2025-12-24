@@ -1,0 +1,52 @@
+---
+openapi: 3.1.0
+info:
+  title: NeoForge Meta Depot
+  version: 1.0.0
+servers:
+  - url: https://depot.neoforged.net/meta
+paths:
+  /v1/minecraft-versions.json:
+    get:
+      responses:
+        200:
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/MinecraftWithNeoForgeVersionListing"
+components:
+  schemas:
+    MinecraftWithNeoForgeVersionListing:
+      type: object
+      additionalProperties: true
+      required:
+        - versions
+      properties:
+        latest_snapshot:
+          $ref: "#/components/schemas/MinecraftWithNeoForgeVersion"
+        versions:
+          type: array
+          items:
+            $ref: "#/components/schemas/MinecraftWithNeoForgeVersion"
+    MinecraftWithNeoForgeVersion:
+      type: object
+      additionalProperties: true
+      required:
+        - version
+        - released
+        - neoforge_version
+        - neoforge_released
+      properties:
+        version:
+          type: string
+        type:
+          type: string
+          default: release
+        released:
+          type: string
+          format: date-time
+        neoforge_version:
+          type: string
+        neoforge_released:
+          type: string
+          format: date-time

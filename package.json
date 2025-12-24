@@ -1,0 +1,24 @@
+{
+  "private": true,
+  "type": "module",
+  "module": "index",
+  "dependencies": {
+    "@types/node-zopfli": "^2.0.5",
+    "node-zopfli": "^2.1.4",
+    "openapi-fetch": "0.15.0"
+  },
+  "devDependencies": {
+    "@types/lzma-native": "^4.0.4",
+    "@types/node": "^24.10.4",
+    "openapi-typescript": "7.10.1",
+    "prettier": "^3.7.4"
+  },
+  "scripts": {
+    "generate-meta-api-types": "openapi-typescript https://meta-api.neoforged.net/v1/openapi.yaml -o ./api/meta-api.v1.d.ts",
+    "generate-meta-depot-types": "openapi-typescript ./openapi.yaml -o ./api/meta-depot.v1.d.ts",
+    "build": "tsc --noEmit",
+    "run": "node --env-file=.env index.ts",
+    "format": "prettier --write **/*.ts",
+    "format:check": "prettier --check **/*.ts"
+  }
+}
