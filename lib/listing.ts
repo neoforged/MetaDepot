@@ -154,7 +154,7 @@ export class ListingsBuilder {
       ) {
         console.debug(
           "Skipping upload of listing %s since it's sha256 checksum matches (%s)",
-          name,
+          listing.name,
           existingListing.sha256,
         );
         continue;

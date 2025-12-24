@@ -117,12 +117,8 @@ export class WebDAVDepotManager extends DepotManager {
 
   async upload(relativePath: string, content: Buffer): Promise<void> {
     // Ensure parent directory exists
-    const dirname = relativePath.substring(0, relativePath.lastIndexOf("/"));
-    if (dirname) {
-      await this.ensureDirectoryExists(dirname);
-    }
-
-    const fileUrl = new URL(relativePath, this.webdavUrl).toString();
+    const fileUrl = new URL(relativePath, this.webdavUrl);
+    await this.ensureParentDirectoryExists(fileUrl);
 
     const headers: HeadersInit = {
       "Content-Type": "application/octet-stream",
@@ -139,18 +135,19 @@ export class WebDAVDepotManager extends DepotManager {
 
     if (!response.ok) {
       throw new Error(
-        `WebDAV PUT failed: ${response.status} ${response.statusText}`,
+        `WebDAV PUT ${fileUrl} failed: ${response.status} ${response.statusText}`,
       );
     }
   }
 
-  private async ensureDirectoryExists(dirPath: string): Promise<void> {
-    // Check if we've already created this directory
-    if (this.createdDirectories.has(dirPath)) {
-      return;
-    }
+  private async ensureParentDirectoryExists(fileUrl: URL): Promise<void> {
+    const dirname = fileUrl.pathname.substring(
+      0,
+      fileUrl.pathname.lastIndexOf("/"),
+    );
+    if (!dirname) return;
 
-    const parts = dirPath.split("/").filter((p) => p.length > 0);
+    const parts = dirname.split("/").filter((p) => p.length > 0);
     let currentPath = "";
 
     for (const part of parts) {
@@ -161,7 +158,7 @@ export class WebDAVDepotManager extends DepotManager {
         continue;
       }
 
-      const dirUrl = new URL(currentPath, this.webdavUrl).toString();
+      const dirUrl = new URL("/" + currentPath, fileUrl).toString();
 
       const headers: HeadersInit = {};
       if (this.authHeader) {
@@ -178,7 +175,7 @@ export class WebDAVDepotManager extends DepotManager {
         this.createdDirectories.add(currentPath);
       } else {
         throw new Error(
-          `WebDAV MKCOL failed: ${response.status} ${response.statusText}`,
+          `WebDAV MKCOL ${dirUrl} failed: ${response.status} ${response.statusText}`,
         );
       }
     }

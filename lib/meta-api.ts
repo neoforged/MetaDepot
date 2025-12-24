@@ -1,6 +1,7 @@
 import type { Middleware } from "openapi-fetch";
 import createClient from "openapi-fetch";
 import type { components, paths } from "../api/meta-api.v1.js";
+import pLimit from "p-limit";
 
 declare type schemas = components["schemas"];
 export type MinecraftVersionSummary = schemas["MinecraftVersionSummary"];
@@ -19,6 +20,9 @@ if (!META_API_TOKEN && !META_API_API_KEY) {
   process.exit(1);
 }
 
+// Adapt every method in client to be concurrency limited
+const metaApiLimit = pLimit(10);
+
 const authMiddleware: Middleware = {
   async onRequest({ request }) {
     if (META_API_API_KEY) {
@@ -26,7 +30,7 @@ const authMiddleware: Middleware = {
     } else if (META_API_TOKEN) {
       request.headers.set("Authorization", `Bearer ${META_API_TOKEN}`);
     }
-    return request;
+    return metaApiLimit(() => fetch(request));
   },
   async onResponse({ request, response }) {
     if (response.status === 401) {

@@ -5,7 +5,8 @@
   "dependencies": {
     "@types/node-zopfli": "^2.0.5",
     "node-zopfli": "^2.1.4",
-    "openapi-fetch": "0.15.0"
+    "openapi-fetch": "0.15.0",
+    "p-limit": "^7.2.0"
   },
   "devDependencies": {
     "@types/lzma-native": "^4.0.4",
