@@ -30,7 +30,7 @@ jobs:
       - name: Update Meta Depot
         run: node index.ts ${{ inputs.allow-full-resync && '--full-resync' || '' }}
         env:
-          META_API_TOKEN: "${{ steps.oidc.outputs.token }}"
-          DEPOT_MANAGER_TOKEN: "${{ steps.oidc.outputs.token }}"
+          META_API_TOKEN: "${{ steps.oidc.outputs.meta-api-token }}"
+          DEPOT_MANAGER_TOKEN: "${{ steps.oidc.outputs.depot-manager-token }}"
           DEPOT_MANAGER_BASE_URL: https://depot-manager.neoforged.net/meta/
           DEPOT_BASE_URL: https://depot.neoforged.net/meta/
