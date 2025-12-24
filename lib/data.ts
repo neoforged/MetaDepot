@@ -61,5 +61,5 @@ export async function buildMinecraftVersionsWithNeoForge(
 }
 
 export function isSafePath(version: string) {
-  return !version.match(/[^0-9a-zA-Z_. -]/);
+  return !version.match(/[^0-9a-zA-Z_. +-]/);
 }
