@@ -5,6 +5,7 @@ import { promisify } from "node:util";
 import crypto from "node:crypto";
 import zopfli from "node-zopfli";
 import type { DepotManager } from "./depot.js";
+import pLimit from "p-limit";
 
 const { FORMAT_OUTPUT } = process.env;
 
@@ -144,6 +145,8 @@ export class ListingsBuilder {
     );
 
     const listings = await Promise.all(Object.values(this.listings));
+    const uploadLimit = pLimit(10);
+    const uploadPromises: Promise<void>[] = [];
 
     for (const listing of listings) {
       const existingListing = existingListings[listing.name];
@@ -166,12 +169,22 @@ export class ListingsBuilder {
       ];
       for (const extension of extensionsToUpload) {
         const filename = `${listing.name}.${extension}`;
-        await fs
-          .readFile(path.join(this.destinationFolder, filename))
-          .then((content) => depot.upload(filename, content))
-          .then(() => console.info("Uploaded %s", filename));
+        uploadPromises.push(
+          uploadLimit(() =>
+            fs
+              .readFile(path.join(this.destinationFolder, filename))
+              .then((content) => depot.upload(filename, content))
+              .then(() => console.info("Uploaded %s", filename)),
+          ),
+        );
       }
     }
+
+    console.info(
+      "Waiting for %d uploads to finish",
+      uploadLimit.activeCount + uploadLimit.pendingCount,
+    );
+    await Promise.all(uploadPromises);
 
     const newDepotIndex: ListingDescriptor[] = listings.slice();
     newDepotIndex.sort((a, b) => a.name.localeCompare(b.name));
